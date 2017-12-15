@@ -101,6 +101,8 @@ A concise overview of the available ``xkcdpass`` options can be accessed via::
                                     number of passwords to generate
         -d DELIM, --delimiter=DELIM
                                     separator character between words
+        -D, --digits
+                                    Include random digits between words
 
 Word lists
 ==========
@@ -154,6 +156,7 @@ While `generate_xkcdpassword()` takes::
     interactive=False,
     acrostic=False,
     delimiter=" "
+    digits=False
 
 
 Insecure random number generators

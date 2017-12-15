@@ -220,14 +220,33 @@ def try_input(prompt, validate):
     return validate(answer)
 
 
+def add_digit(word):
+    """
+    Return word with a digit maybe added to the word in the front or the back.
+    """
+    is_digited = bool(random.randint(0, 1))
+    if is_digited:
+        is_prefix = bool(random.randint(0, 1))
+        digit = str(random.randint(0, 9))
+        return digit + word if is_prefix else word + digit
+    return word
+
+
 def generate_xkcdpassword(wordlist,
                           numwords=6,
                           interactive=False,
                           acrostic=False,
-                          delimiter=" "):
+                          delimiter=" ",
+                          digits=False):
     """
     Generate an XKCD-style password from the words in wordlist.
     """
+    def generate_password():
+        if not acrostic:
+            words = choose_words(wordlist, numwords)
+        else:
+            words = find_acrostic(acrostic, worddict)
+        return delimiter.join((add_digit(word) for word in words) if digits else words)
 
     passwd = None
 
@@ -237,12 +256,7 @@ def generate_xkcdpassword(wordlist,
 
     # useful if driving the logic from other code
     if not interactive:
-        if not acrostic:
-            passwd = delimiter.join(choose_words(wordlist, numwords))
-        else:
-            passwd = delimiter.join(find_acrostic(acrostic, worddict))
-
-        return passwd
+        return generate_password()
 
     # else, interactive session
     # define input validators
@@ -277,10 +291,7 @@ def generate_xkcdpassword(wordlist,
     accepted = False
 
     while not accepted:
-        if not acrostic:
-            passwd = delimiter.join(choose_words(wordlist, numwords))
-        else:
-            passwd = delimiter.join(find_acrostic(acrostic, worddict))
+        passwd = generate_password()
         print("Generated: " + passwd)
         accepted = try_input("Accept? [yN] ", accepted_validator)
 
@@ -296,7 +307,8 @@ def emit_passwords(wordlist, options):
             interactive=options.interactive,
             numwords=options.numwords,
             acrostic=options.acrostic,
-            delimiter=options.delimiter))
+            delimiter=options.delimiter,
+            digits=options.digits))
         count -= 1
 
 
@@ -365,6 +377,10 @@ class XkcdPassArgumentParser(argparse.ArgumentParser):
                 "Allow fallback to weak RNG if the "
                 "system does not support cryptographically secure RNG. "
                 "Only use this if you know what you are doing."))
+        self.add_argument(
+            "-D", "--digits",
+            action="store_true", dest="digits", default=False,
+            help="Include random digits between words.")
 
 
 def main(argv=None):
